@@ -1,0 +1,11 @@
+--- xeq.c.old	2021-02-19 07:54:45.915575826 +0100
++++ xeq.c	2021-02-19 07:55:03.135621103 +0100
+@@ -248,7 +248,7 @@
+ }
+ 
+ void cmd_off(enum nilop op) {
+-	shutdown_calc();
++	// shutdown_calc();
+ }
+ 
+ #ifndef state_pc

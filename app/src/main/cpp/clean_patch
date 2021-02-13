@@ -1,0 +1,17 @@
+#!/bin/bash
+# Delete local files that are included in the PATCH
+REV=r3913
+for file in $(cat SVN_MANIFEST)
+do
+    rm $file
+done
+rm -r consts
+rm -r decNumber
+if [ -f wp34s-code-$REV-trunk.zip ]
+then
+    rm wp34s-code-$REV-trunk.zip
+fi
+if [ -d wp34s-code-$REV-trunk ]
+then
+    rm -fR wp34s-code-$REV-trunk
+fi

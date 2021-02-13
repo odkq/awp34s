@@ -1,0 +1,25 @@
+#!/bin/bash
+# Prepare a PATCH file to be applied by apply_patch
+# Needs wget, patch, unzip
+REV=r3913
+if [ ! -f wp34s-code-$REV-trunk.zip ]
+then
+    wget https://sourceforge.net/code-snapshots/svn/w/wp/wp34s/code/wp34s-code-$REV-trunk.zip
+fi
+unzip wp34s-code-$REV-trunk.zip
+cd wp34s-code-$REV-trunk
+patch < ../makefile.diff
+patch < ../xeq.diff
+make
+cp -r Linux64/consts/ consts
+cd ..
+
+mkdir decNumber
+mkdir consts
+ln -s ../decNumber consts
+
+for file in $(cat SVN_MANIFEST)
+do
+    cp wp34s-code-$REV-trunk/$file $file
+done
+patch -p1 < PATCH
