@@ -1,6 +1,6 @@
 #!/bin/bash
 # Delete local files that are included in the PATCH
-REV=r3913
+REV=$(cat SVN_REVISION)
 for file in $(cat SVN_MANIFEST)
 do
     rm $file
