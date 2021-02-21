@@ -7,14 +7,27 @@ WP 34s Calculator Port to Android
 Port of the the WP 34S calculator (open source firmware for the HP 30b/20b
 calculators) to Android.
 
-More information about WP 34S:
+Install latest tag directly from GooglePlay at:
+https://play.google.com/store/apps/details?id=com.odkq.wp34s
+
+You can build a debug .apk and install it manually in the device following the
+instructions at [BUILDING.md](BUILDING.md)
+
+Information on WP 34S:
 
   - [Wikipedia Entry](https://en.wikipedia.org/wiki/HP_30b#WP_31S,_WP_34S_and_WP_34C)
   - [SourceForge Project](https://sourceforge.net/projects/wp34s/)
   - [Online Seller](https://commerce.hpcalc.org/34s.php)
   - [Original Wiki](http://www.wiki4hp.com/doku.php?id=34s:repurposing_project)
 
-The WP 34S project has an IPhone app, but no Android app. Wanting to learn
+At [this directory on SF](https://sourceforge.net/projects/wp34s/files/doc/)
+you will find a beginners guide
+[WP_34S_Beg_Guide.pdf](https://pilotfiber.dl.sourceforge.net/project/wp34s/doc/WP_34S_Beg_Guide.pdf)
+and a comprehensive manual
+[Manual_wp_34s_3_1.pdf](https://deac-ams.dl.sourceforge.net/project/wp34s/doc/Manual_wp_34s_3_1.pdf")
+The manuals apply in its entirety to this port.
+
+The WP 34S project has an IPhone app but no Android app. Wanting to learn
 about Android and NDK development, I did this.
 
 I labeled this as a port rather than as an emulator as it is not
@@ -28,65 +41,3 @@ Free Software and released under the GNU Public License v3, as the WP
 
 Thanks to Walter Bonin, Paul Dale, Marcus von Cube and the rest of the WP 34S
 contributors for the excelent calculator.
-
-Building awp34s from source
-===========================
-
-There is a Makefile that download the dependencies:
-
-  - gradle
-  - the original WP 34s code from SVN
-
-Patches the C code (see app/src/main/cpp/PATCH) and prepares the cpp/ directory
-for compilation, then call gradle to build the .apk
-
-Linux distribution dependencies
--------------------------------
-
-Java:
-
-On Debian 10:
-
-```apt-get install openjdk-11-jre```
-
-Command line tools: unzip, patch, make, gcc libncurses-dev
-
-On Debian 10:
-
-```apt-get install patch unzip build-essential libncurses-dev```
-
-Installing Android SDK, Android 29 API, Platform Tools and NDK using commandline tools
---------------------------------------------------------------------------------------
-
-The android SDK and dependencies will take around 10 GB of hard drive space
-
-```
-# Create a directory writable by the user for the android sdk
-sudo mkdir /opt/android-sdk
-sudo chown $(whoami) /opt/android-sdk
-cd /opt/android-sdk
-# Install the commandlintools
-wget https://dl.google.com/android/repository/commandlinetools-linux-6858069_latest.zip
-unzip commandlinetools*.zip
-rm *.zip
-# Set ANDROID_HOME for this and future sessions
-export ANDROID_HOME=/opt/android-sdk
-echo 'export ANDROID_HOME=/opt/android-sdk/' >> ~/.bashrc
-# Somehow cmdline-tools need to be in a subdirectory called 'latest' to work
-mkdir cmdline-tools/latest
-mv cmdline-tools/* cmdline-tools/latest/
-cd cmdline-tools/latest/bin
-# Install API layer, platform tools and ndk
-./sdkmanager 'platforms;android-29' platform-tools ndk-bundle
-```
-
-Compiling everything
---------------------
-
-```
-$ make
-```
-
-This will download gradle, and build the .apk into
-app/build/outputs/apk/release/app-release-unsigned.apk
-
