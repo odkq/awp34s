@@ -72,6 +72,8 @@ int put_key(int k)
 }
 void xprocess_keycode(int k)
 {
+    if (k < 0)
+        return;
     return process_keycode(k);
 }
 enum shifts shift_down(void)

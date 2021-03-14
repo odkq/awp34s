@@ -1,13 +1,13 @@
 Building awp34s from source
 ===========================
 
-There is a Makefile that download the dependencies:
+There is a Makefile that:
 
-  - gradle
-  - the original WP 34s code from SVN
-
-Patches the C code (see app/src/main/cpp/PATCH) and prepares the cpp/ directory
-for compilation, then call gradle to build the .apk
+  - Downloads gradle
+  - Download the original WP 34s code from SVN
+  - Patches the C code (see app/src/main/cpp/PATCH)+
+  - Prepares the cpp/ directory for compilation
+  - Call gradle to build the .apk
 
 Linux distribution dependencies
 -------------------------------
@@ -59,4 +59,31 @@ $ make
 This will download gradle, and build the .apk into
 app/build/outputs/apk/release/app-release-unsigned.apk
 
+Using Android Studio
+--------------------
 
+Android Studio needs 'gradlew' wrapper in place to use latest gradle and find
+all the files for the project. From a clean repo, you can Make:
+
+```
+make
+make gradlew
+```
+
+To build the apk (that will pull the .c files from SVN) and the gradlew
+wrapper, then you can start studio with
+
+```
+studio.sh .
+```
+
+And it will find all the dependencies
+
+Making back the patch file
+--------------------------
+
+Any modifications made to the original .c files are not stored on this
+repository, only a diff with the differences between them and the selected
+revision in SVN_REVISION.
+
+TODO: fix make_patch
