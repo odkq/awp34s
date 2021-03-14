@@ -509,7 +509,6 @@ class CalcView extends View
         for (int x = 0; x < LcdConstants.BITMAP_WIDTH; x++) {
             for (int y = 0; y < 6; y++) {
                 if (data[LcdConstants.MATRIX_BASE + index] != 0x00) {
-                    Log.i("WP34S.MainActivity", "drawing dot " + x + ", " + y);
                     drawDot(x, y);
                 }
                 index++;
