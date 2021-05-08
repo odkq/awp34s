@@ -1,6 +1,6 @@
 diff -Naur original/decNumber/decContext.h new/decNumber/decContext.h
---- original/decNumber/decContext.h	2021-02-19 08:22:57.387641627 +0100
-+++ new/decNumber/decContext.h	2021-02-19 08:32:05.004931791 +0100
+--- original/decNumber/decContext.h	2021-05-09 01:03:02.771054291 +0200
++++ new/decNumber/decContext.h	2021-05-09 01:03:03.111054449 +0200
 @@ -43,11 +43,17 @@
  typedef unsigned char		uint8_t;
  typedef unsigned short int	uint16_t;
@@ -20,8 +20,8 @@ diff -Naur original/decNumber/decContext.h new/decNumber/decContext.h
    /* Conditional code flag -- set this to 0 for best performance */
    #define DECSUBSET 0              // 1=enable subset arithmetic
 diff -Naur original/display.c new/display.c
---- original/display.c	2021-02-19 08:22:57.971642966 +0100
-+++ new/display.c	2021-02-19 08:32:05.588933194 +0100
+--- original/display.c	2021-05-09 01:03:03.059054425 +0200
++++ new/display.c	2021-05-09 01:03:03.571054662 +0200
 @@ -28,6 +28,10 @@
  #include "printer.h"
  #include "serial.h"
@@ -111,8 +111,8 @@ diff -Naur original/display.c new/display.c
  }
  
 diff -Naur original/features.h new/features.h
---- original/features.h	2021-02-19 08:22:57.547641995 +0100
-+++ new/features.h	2021-02-19 08:32:05.168932185 +0100
+--- original/features.h	2021-05-09 01:03:02.803054306 +0200
++++ new/features.h	2021-05-09 01:03:03.243054510 +0200
 @@ -16,10 +16,11 @@
  #ifndef FEATURES_H__
  #define FEATURES_H__
@@ -138,8 +138,8 @@ diff -Naur original/features.h new/features.h
  //#define INCLUDE_STOPWATCH
  #endif
 diff -Naur original/keys.c new/keys.c
---- original/keys.c	2021-02-19 08:22:57.531641957 +0100
-+++ new/keys.c	2021-02-19 08:32:05.152932147 +0100
+--- original/keys.c	2021-05-09 01:03:02.799054304 +0200
++++ new/keys.c	2021-05-09 01:03:03.231054505 +0200
 @@ -1439,10 +1439,12 @@
  	case K_CMPLX:
  		if (State2.ind || State2.dot)
@@ -154,8 +154,8 @@ diff -Naur original/keys.c new/keys.c
  
  	case K63:	// Y
 diff -Naur original/lcd.c new/lcd.c
---- original/lcd.c	2021-02-19 08:22:57.975642976 +0100
-+++ new/lcd.c	2021-02-19 08:32:05.588933194 +0100
+--- original/lcd.c	2021-05-09 01:03:03.063054427 +0200
++++ new/lcd.c	2021-05-09 01:03:03.571054662 +0200
 @@ -15,10 +15,15 @@
   */
  
@@ -320,8 +320,8 @@ diff -Naur original/lcd.c new/lcd.c
          updateScreen();
  #else
 diff -Naur original/lcd.h new/lcd.h
---- original/lcd.h	2021-02-19 08:22:57.551642003 +0100
-+++ new/lcd.h	2021-02-19 08:32:05.172932195 +0100
+--- original/lcd.h	2021-05-09 01:03:02.803054306 +0200
++++ new/lcd.h	2021-05-09 01:03:03.247054511 +0200
 @@ -93,8 +93,9 @@
  #define Lcd_Enable()
  #endif
@@ -334,8 +334,8 @@ diff -Naur original/lcd.h new/lcd.h
  #define AT91C_SLCDC_MEM ((uint32_t*) LcdData)
  #define Lcd_Enable()
 diff -Naur original/pretty.c new/pretty.c
---- original/pretty.c	2021-02-19 08:22:57.563642031 +0100
-+++ new/pretty.c	2021-02-19 08:32:05.180932214 +0100
+--- original/pretty.c	2021-05-09 01:03:02.807054308 +0200
++++ new/pretty.c	2021-05-09 01:03:03.255054516 +0200
 @@ -22,6 +22,9 @@
  #include "xeq.h"		// This helps the syntax checker
  #include "display.h"		// This too
@@ -346,11 +346,65 @@ diff -Naur original/pretty.c new/pretty.c
  #include "translate.c"		// unicode[]
  #include "font_alias.inc"	// more character aliases
  
+diff -Naur original/revision.h new/revision.h
+--- original/revision.h	2021-05-09 01:03:02.787054299 +0200
++++ new/revision.h	2021-05-09 01:03:03.187054484 +0200
+@@ -24,4 +24,4 @@
+ #ifdef REALBUILD
+ __attribute__((section(".revision"),externally_visible))
+ #endif
+-const char SvnRevision[ 4 ] = "0   ";
++const char SvnRevision[ 4 ] = "3914";
 diff -Naur original/storage.c new/storage.c
---- original/storage.c	2021-02-19 08:22:57.543641986 +0100
-+++ new/storage.c	2021-02-19 08:32:05.164932176 +0100
-@@ -861,7 +861,8 @@
+--- original/storage.c	2021-05-09 01:03:02.803054306 +0200
++++ new/storage.c	2021-05-09 01:03:03.239054508 +0200
+@@ -59,6 +59,8 @@
+ #include "stats.h"
+ #include "alpha.h"
+ 
++extern char *get_datfile(char *datfile, const char *basename);
++
+ #define PAGE_SIZE	 256
+ 
+ /*
+@@ -466,15 +468,16 @@
+ #if defined(QTGUI) || defined(IOS)
+ extern char* get_region_path(int region);
+ #else
+-static char* get_region_path(int region)
++static char* get_region_path(int region, char *buffer)
+ {
+-	return region == REGION_BACKUP ? BACKUP_FILE : LIBRARY_FILE;
++	return region == REGION_BACKUP ? get_datfile(buffer, BACKUP_FILE) : get_datfile(buffer, LIBRARY_FILE);
+ }
+ #endif
+ 
+ static int program_flash( void *destination, void *source, int count )
+ {
+ 	char *name;
++	char *buffer[1024];
+ 	char *dest = (char *) destination;
+ 	FILE *f = NULL;
+ 	int offset;
+@@ -488,11 +491,11 @@
+ 	 *  Update the correct region file
+ 	 */
+ 	if ( dest >= (char *) &BackupFlash && dest < (char *) &BackupFlash + sizeof( BackupFlash ) ) {
+-		name = get_region_path( REGION_BACKUP );
++		name = get_region_path( REGION_BACKUP , buffer);
+ 		offset = dest - (char *) &BackupFlash;
  	}
+ 	else if ( dest >= (char *) &UserFlash && dest < (char *) &UserFlash + sizeof( UserFlash ) ) {
+-		name = get_region_path( REGION_LIBRARY );
++		name = get_region_path( REGION_LIBRARY , buffer);
+ 		offset = dest - (char *) &UserFlash;
+ 	}
+ 	else {
+@@ -859,9 +862,11 @@
+ 	if ( filename != NULL && *filename != '\0' ) {
+ 		strncpy( StateFile, filename, FILENAME_MAX );
+ 	}
++
  	f = fopen( StateFile, "wb" );
  	if ( f == NULL ) {
 -		ShowMessage( "Save Error", strerror( errno ) );
@@ -359,7 +413,7 @@ diff -Naur original/storage.c new/storage.c
  		return;
  	}
  	process_cmdline_set_lift();
-@@ -899,7 +900,8 @@
+@@ -899,7 +904,8 @@
  
  	if ( *CurrentDir == '\0' ) {
  		// Determine current directory on first call
@@ -369,7 +423,7 @@ diff -Naur original/storage.c new/storage.c
  		p = CurrentDir + strlen( CurrentDir );
  		if ( p != CurrentDir && p[ -1 ] != SEPARATOR ) {
  			*p = SEPARATOR;
-@@ -1011,11 +1013,21 @@
+@@ -1011,11 +1017,21 @@
  
  static char* mktmpname(char* name, const char* prefix)
  {
@@ -392,7 +446,7 @@ diff -Naur original/storage.c new/storage.c
  #else
  	return tmpnam(name);
  #endif
-@@ -1081,7 +1093,9 @@
+@@ -1081,7 +1097,9 @@
  		f = fopen( tempname, "rb" );
  
  		if ( f == NULL ) {
@@ -404,8 +458,8 @@ diff -Naur original/storage.c new/storage.c
  		else {
  			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
 diff -Naur original/xeq.c new/xeq.c
---- original/xeq.c	2021-02-19 08:22:57.519641931 +0100
-+++ new/xeq.c	2021-02-19 08:32:05.140932117 +0100
+--- original/xeq.c	2021-05-09 01:03:02.799054304 +0200
++++ new/xeq.c	2021-05-09 01:03:03.223054500 +0200
 @@ -248,7 +248,7 @@
  }
  
@@ -415,17 +469,35 @@ diff -Naur original/xeq.c new/xeq.c
  }
  
  #ifndef state_pc
-@@ -6252,6 +6252,7 @@
+@@ -6175,6 +6175,8 @@
+ #ifndef REALBUILD
+ 
+ #include "string.h"
++extern char *get_datfile(char *datfile, const char *basename);
++// #include "wps34_wrapper.h"
+ 
+ void paste_raw_x(const char *in)
+ {
+@@ -6252,6 +6254,16 @@
  	}
  }
  
-+void shutdown_calc( void ) { exit( 0 ); }
++void shutdown_calc( void )
++{
++	char datfile[1024];
++
++	android_logString("exiting\n");
++	get_datfile(datfile, "wp34s.dat");
++	save_statefile(datfile);
++
++	exit( 0 );
++}
  #endif
  
  #ifdef GNUC_POP_ERROR
 diff -Naur original/xeq.h new/xeq.h
---- original/xeq.h	2021-02-19 08:22:57.471641821 +0100
-+++ new/xeq.h	2021-02-19 08:32:05.088931993 +0100
+--- original/xeq.h	2021-05-09 01:03:02.787054299 +0200
++++ new/xeq.h	2021-05-09 01:03:03.179054481 +0200
 @@ -86,9 +86,11 @@
          unsigned int l[2];      // makes 32 bit alignment possible
  } REGISTER;

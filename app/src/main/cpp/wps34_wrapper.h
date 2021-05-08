@@ -31,5 +31,6 @@ extern "C"
     extern int is_dot_wrapper(int n);
     extern int xput_key(int k);
     extern void xprocess_keycode(int k);
+    extern char *get_datfile(char *datfile, const char *basename);
 };
 #endif

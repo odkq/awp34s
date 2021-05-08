@@ -11,7 +11,10 @@ Install latest tag directly from GooglePlay at:
 https://play.google.com/store/apps/details?id=com.odkq.wp34s
 
 You can build a debug .apk and install it manually in the device following the
-instructions at [BUILDING.md](BUILDING.md)
+instructions at [BUILDING.md](BUILDING.md).
+
+Any contribution/pull request is of course welcome. There is a
+[TO-DO list](TODO.md) on future plans
 
 Information on WP 34S:
 

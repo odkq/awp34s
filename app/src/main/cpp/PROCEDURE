@@ -1,0 +1,6 @@
+- Copy any changed file safely somewhere
+- ./clean_patch
+- ./apply_patch
+
+- Restore any changed file
+- ./make_patch

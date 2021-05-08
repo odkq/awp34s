@@ -37,11 +37,33 @@ uint64_t LcdData[10];
 unsigned long long int instruction_count = 0;
 int view_instruction_counter = 0;
 
+/*
+ * Return the directory for data files of this application in
+ * android
+ */
+char *get_datfile(char *datfile, const char *basename)
+{
+    char line[1024];
+    FILE *fp = fopen("/proc/self/cmdline", "r");
+
+    /* cmdline is the name of the process, so the name of our app.
+     * wp34s.odkq.com most of the time, but just to make sure */
+    fgets(line, sizeof line, fp);
+    fclose(fp);
+    sprintf(datfile, "/data/data/%s/%s", line, basename);
+    return datfile;
+}
+
 void init_calculator()
 {
+    char datfile[1024];
+
     for (int i = 0; i < 10; i++) {
         LcdData[i] = 0;
     }
+
+    get_datfile(datfile, "wp34s.dat");
+    load_statefile(datfile);
 
     DispMsg = NULL;
     init_34s();

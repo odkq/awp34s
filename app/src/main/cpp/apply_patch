@@ -1,5 +1,5 @@
 #!/bin/bash
-# Prepare a PATCH file to be applied by apply_patch
+# Apply a PATCH file over the downloaded source code
 # Needs wget, patch, unzip
 REV=$(cat SVN_REVISION)
 if [ ! -d wp34s-code-$REV-trunk ]
