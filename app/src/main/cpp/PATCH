@@ -346,15 +346,6 @@ diff -Naur original/pretty.c new/pretty.c
  #include "translate.c"		// unicode[]
  #include "font_alias.inc"	// more character aliases
  
-diff -Naur original/revision.h new/revision.h
---- original/revision.h	2021-05-09 01:03:02.787054299 +0200
-+++ new/revision.h	2021-05-09 01:03:03.187054484 +0200
-@@ -24,4 +24,4 @@
- #ifdef REALBUILD
- __attribute__((section(".revision"),externally_visible))
- #endif
--const char SvnRevision[ 4 ] = "0   ";
-+const char SvnRevision[ 4 ] = "3914";
 diff -Naur original/storage.c new/storage.c
 --- original/storage.c	2021-05-09 01:03:02.803054306 +0200
 +++ new/storage.c	2021-05-09 01:03:03.239054508 +0200

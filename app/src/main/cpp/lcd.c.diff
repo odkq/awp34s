@@ -1,0 +1,13 @@
+--- old_patch/lcd.c	2025-06-22 09:03:56.511338000 +0200
++++ lcd.c	2025-06-22 09:04:58.090215859 +0200
+@@ -20,10 +20,6 @@
+ #include "display.h"
+ #include "xeq.h"
+ 
+-#if defined(ANDROID)
+-#include "wp34s_android.h"
+-#endif
+-
+ #if defined(REALBUILD)
+ #include "atmel/board.h"
+ #include "atmel/slcdc.h"

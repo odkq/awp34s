@@ -1,5 +1,6 @@
 #!/bin/bash
 # Delete local files that are included in the PATCH
+rm -f *.orig *.rej
 REV=$(cat SVN_REVISION)
 for file in $(cat SVN_MANIFEST)
 do

@@ -22,3 +22,5 @@ do
     cp wp34s-code-$REV-trunk/$file $file
 done
 patch -p1 < PATCH
+patch < lcd.c.diff
+patch < lcd.h.diff
