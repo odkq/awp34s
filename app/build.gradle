@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    namespace "com.odkq.wp34s"
+    namespace "com.jack23247.wp34s"
     compileSdkVersion 35
     buildToolsVersion '36.0.0'
     ndkVersion '27.2.12479018'
     defaultConfig {
-        applicationId "com.odkq.wp34s"
+        applicationId "com.jack23247.wp34s"
         minSdk 29
         targetSdkVersion 35
         versionCode 5
@@ -30,7 +30,11 @@ android {
         }
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
