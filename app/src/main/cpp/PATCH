@@ -419,29 +419,15 @@ diff -Naur original/storage.c new/storage.c
  		p = CurrentDir + strlen( CurrentDir );
  		if ( p != CurrentDir && p[ -1 ] != SEPARATOR ) {
  			*p = SEPARATOR;
-@@ -1011,11 +1017,21 @@
+@@ -1011,7 +1017,7 @@
  
  static char* mktmpname(char* name, const char* prefix)
  {
 -#if defined(QTGUI) || ( defined(USECURSES) && ! defined(WIN32) )
-+	// pmm
 +#if defined(QTGUI) || ( defined(USECURSES)  || defined(ANDROID) && ! defined(WIN32) )
  	strcpy(name, "wp34s");
  	strcat(name, prefix);
  	strcat(name, "_XXXXXX");
-+
-+#ifdef ANDROID
-+	#pragma clang diagnostic push
-+	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-+#endif
- 	return mktemp(name);
-+#ifdef ANDROID
-+	#pragma  clang diagnostic pop
-+#endif
-+
- #else
- 	return tmpnam(name);
- #endif
 @@ -1081,7 +1097,9 @@
  		f = fopen( tempname, "rb" );
  
@@ -462,9 +448,9 @@ diff -Naur original/xeq.c new/xeq.c
  void cmd_off(enum nilop op) {
 -	// shutdown_calc();
 +	shutdown_calc();
+ //	shutdown();
  }
  
- #ifndef state_pc
 @@ -6175,6 +6175,8 @@
  #ifndef REALBUILD
  
