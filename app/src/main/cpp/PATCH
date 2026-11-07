@@ -156,7 +156,7 @@ diff -Naur original/keys.c new/keys.c
 diff -Naur original/lcd.c new/lcd.c
 --- original/lcd.c	2021-05-09 01:03:03.063054427 +0200
 +++ new/lcd.c	2021-05-09 01:03:03.571054662 +0200
-@@ -15,10 +15,15 @@
+@@ -15,6 +15,7 @@
   */
  
  
@@ -164,14 +164,6 @@ diff -Naur original/lcd.c new/lcd.c
  #include "lcd.h"
  #include "display.h"
  #include "xeq.h"
- 
-+#if defined(ANDROID)
-+#include "wp34s_android.h"
-+#endif
-+
- #if defined(REALBUILD)
- #include "atmel/board.h"
- #include "atmel/slcdc.h"
 @@ -26,8 +31,9 @@
  volatile FLAG WaitForLcd;
  #endif
@@ -322,6 +314,19 @@ diff -Naur original/lcd.c new/lcd.c
 diff -Naur original/lcd.h new/lcd.h
 --- original/lcd.h	2021-05-09 01:03:02.803054306 +0200
 +++ new/lcd.h	2021-05-09 01:03:03.247054511 +0200
+@@ -18,6 +18,12 @@
+ #define __LCD_H__
+ #include "xeq.h"
+ 
++#if defined(ANDROID)
++#include <string.h>
++#include "wp34s_android.h"
++#define PRINTF printf
++#endif
++
+ #if defined(QTGUI) || defined(IOS)
+ #include <stdint.h>
+ #endif
 @@ -93,8 +93,9 @@
  #define Lcd_Enable()
  #endif
@@ -346,15 +351,6 @@ diff -Naur original/pretty.c new/pretty.c
  #include "translate.c"		// unicode[]
  #include "font_alias.inc"	// more character aliases
  
-diff -Naur original/revision.h new/revision.h
---- original/revision.h	2021-05-09 01:03:02.787054299 +0200
-+++ new/revision.h	2021-05-09 01:03:03.187054484 +0200
-@@ -24,4 +24,4 @@
- #ifdef REALBUILD
- __attribute__((section(".revision"),externally_visible))
- #endif
--const char SvnRevision[ 4 ] = "0   ";
-+const char SvnRevision[ 4 ] = "3914";
 diff -Naur original/storage.c new/storage.c
 --- original/storage.c	2021-05-09 01:03:02.803054306 +0200
 +++ new/storage.c	2021-05-09 01:03:03.239054508 +0200
@@ -382,7 +378,7 @@ diff -Naur original/storage.c new/storage.c
  static int program_flash( void *destination, void *source, int count )
  {
  	char *name;
-+	char *buffer[1024];
++	char buffer[1024];
  	char *dest = (char *) destination;
  	FILE *f = NULL;
  	int offset;

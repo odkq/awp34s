@@ -1,4 +1,4 @@
-package com.odkq.wp34s;
+package com.megatops.wp34s;
 
 /* Constants coming from lcd.h
  * TODO: Find some way to automate constants extraction

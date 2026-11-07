@@ -19,7 +19,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.odkq.wp34s;
+package com.megatops.wp34s;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         // DataDir for the application is writtable without
         // special permissions
         DataDir = Environment.getExternalStorageDirectory() +
-                "/Android/data/com.odkq.wp34s";
+                "/Android/data/com.megatops.wp34s";
         // Used to load the wp34s C library on application startup.
         System.loadLibrary("wp34s");
     }
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("WP34S.C", text);
     }
 
-    public native String wp34sInit();
+    public native int wp34sInit();
 }
 
 /*
