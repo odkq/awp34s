@@ -22,9 +22,11 @@
 package com.megatops.wp34s;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import android.annotation.SuppressLint;
-
+import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.Context;
@@ -42,6 +44,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 
 import java.io.IOException;
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         Configuration conf = getResources().getConfiguration();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -78,7 +82,27 @@ public class MainActivity extends AppCompatActivity {
         // setContentView(R.layout.activity_main);
 
         setContentView(new CalcView(this));
+        setupSystemBars();
         wp34sInit();
+    }
+
+    // change system bar color to match theme
+    @SuppressWarnings("deprecation")
+    private void setupSystemBars() {
+        Window window = getWindow();
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
+                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+        );
+        window.setStatusBarColor(Color.parseColor("#292729"));
+        window.setNavigationBarColor(Color.parseColor("#272526"));
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(window, window.getDecorView());
+        controller.setAppearanceLightStatusBars(false);
+        controller.setAppearanceLightNavigationBars(false);
     }
 
     public static void logString(String text)
@@ -357,12 +381,14 @@ class CalcView extends View
     /* Return the row, common to all keys */
     private int retrieveRow(int y)
     {
+        final int yoffset = 19; // move the keypad down for better view
+
         /* Coordinate points of corners of buttons in all rows */
         final int yrow[] = {280, 365, 420, 504, 592, 677, 720, 808, 850, 935, 980, 1064,
                 1108, 1194};
         for (int i = 0; i < 7; i++) {
-            int min = yrow[(i * 2)];
-            int max = yrow[(i * 2) + 1];
+            int min = yrow[(i * 2)] + yoffset;
+            int max = yrow[(i * 2) + 1] + yoffset;
             if ((y >= min) && (y <= max)) {
                 return i;
             }

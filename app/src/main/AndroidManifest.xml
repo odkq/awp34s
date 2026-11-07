@@ -15,7 +15,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        tools:ignore="GoogleAppIndexingWarning">
+        android:screenOrientation="portrait"
+        tools:ignore="DiscouragedApi,GoogleAppIndexingWarning">
         <activity android:name=".MainActivity"
                   android:exported="true"
                   android:launchMode="singleInstance"
