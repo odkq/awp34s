@@ -126,17 +126,6 @@ diff -Naur original/features.h new/features.h
  /*
   *  Select optional features here
   */
-@@ -37,7 +38,10 @@
- // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
- // Time Module or the HP-55
- #if !defined(REALBUILD) || (defined(XTAL) /* && !defined(INFRARED) */)
-+// pmm
-+#if !defined(ANDROID)
- #define INCLUDE_STOPWATCH
-+#endif
- #else
- //#define INCLUDE_STOPWATCH
- #endif
 diff -Naur original/keys.c new/keys.c
 --- original/keys.c	2021-05-09 01:03:02.799054304 +0200
 +++ new/keys.c	2021-05-09 01:03:03.231054505 +0200
@@ -439,6 +428,18 @@ diff -Naur original/storage.c new/storage.c
  		}
  		else {
  			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
+diff -Naur original/stopwatch.c new/stopwatch.c
+--- original/stopwatch.c	2026-11-07 18:24:59.606377800 +0800
++++ new/stopwatch.c	2026-11-08 15:01:26.569148900 +0800
+@@ -116,7 +116,7 @@
+  * Current ticker count. Or its emulation when not running on WP34s hardware
+  */
+ unsigned long getTicker() {
+-#if defined(CONSOLE) || defined(IOS)
++#if defined(CONSOLE) || defined(IOS) || defined(ANDROID)
+     struct timeval tv;
+     gettimeofday(&tv,(struct timezone*) NULL);
+     return tv.tv_sec * 10 + tv.tv_usec / 100000;
 diff -Naur original/xeq.c new/xeq.c
 --- original/xeq.c	2021-05-09 01:03:02.799054304 +0200
 +++ new/xeq.c	2021-05-09 01:03:03.223054500 +0200

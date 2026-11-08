@@ -5,6 +5,7 @@
  * (Bridge between Java and C++)
  *
  * Copyright (C) 2020 Pablo Martin Medrano <pablo@odkq.com>
+ * Copyright (C) 2026 Ding Zhaojie <zhaojie_ding@msn.com>
  *
  * AWP34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,6 +96,7 @@ Java_com_megatops_wp34s_CalcView_wp34sPutKey(
      * in keys.h */
     jint translated;
 #define K_RELEASE 98   // From xeq.h
+#define K_HEARTBEAT 99 // From xeq.h
     jint jtockey[] =
             {-1, 0, 1, 2, 3, 4, 5,
              6, 7, 8, 9, 10, 11,
@@ -105,6 +107,8 @@ Java_com_megatops_wp34s_CalcView_wp34sPutKey(
              36, 37, 38, 39, 40};
     if (key == -1) {
         translated = K_RELEASE;
+    } else if (key == -2) {
+        translated = K_HEARTBEAT;
     } else if ((key < 0) || (key > 38)) {
         return -1;
     } else {

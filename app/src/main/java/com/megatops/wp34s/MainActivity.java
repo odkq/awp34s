@@ -4,6 +4,7 @@
  * MainActivity.java: Java code for the interface
  *
  * Copyright (C) 2020 Pablo Martin Medrano <pablo@odkq.com>
+ * Copyright (C) 2026 Ding Zhaojie <zhaojie_ding@msn.com>
  *
  * AWP34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,17 +145,11 @@ class CalcView extends View
         public void run() {
             // Do something here on the main thread
             // Log.d("WP34S.MainActivity", "Called on main thread");
-            // Repeat this the same runnable code block again another 2 seconds
+            // Repeat this the same runnable code block again another 100 ms
             // 'this' is referencing the Runnable object
-            /*
-            if (curdig < 9) {
-                curdig++;
-            } else {
-                curdig = 0;
-            }
-            handler.postDelayed(this, 1000);
+            wp34sPutKey(-2); // heartbeat key, "pressed" every 100ms
+            handler.postDelayed(this, 100);
             invalidate();
-            */
         }
     };
 

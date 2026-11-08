@@ -4,6 +4,7 @@
  * wp34s_wrapper.c: Bridge between JNI C++ and WPS34 C code
  *
  * Copyright (C) 2020 Pablo Martin Medrano <pablo@odkq.com>
+ * Copyright (C) 2026 Ding Zhaojie <zhaojie_ding@msn.com>
  *
  * AWP34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +97,18 @@ void xprocess_keycode(int k)
 {
     if (k < 0)
         return;
-    return process_keycode(k);
+
+    // 100ms stopwatch heartbeat
+    if (KeyCallback != NULL) {
+        (void) (*KeyCallback)(k);
+        return;
+    }
+
+    if (StopWatchRunning && (Ticker % STOPWATCH_BLINK) == 0) {
+        dot(LIT_EQ, !is_dot(LIT_EQ));
+        finish_display();
+    }
+    process_keycode(k);
 }
 enum shifts shift_down(void)
 {
