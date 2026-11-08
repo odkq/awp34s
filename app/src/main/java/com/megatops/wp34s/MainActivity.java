@@ -144,15 +144,16 @@ class CalcView extends View {
 
         /* Class to define a timer callback on another thread */
         Runnable runnableCode = new Runnable() {
+            // Do something here on the main thread
+            // Repeat this the same runnable code block again another 100 ms
+            // 'this' is referencing the Runnable object
             @Override
             public void run() {
-                // Do something here on the main thread
-                // Log.d("WP34S.MainActivity", "Called on main thread");
-                // Repeat this the same runnable code block again another 100 ms
-                // 'this' is referencing the Runnable object
-                wp34sPutKey(-2); // heartbeat key, "pressed" every 100ms
+                // heartbeat key, "pressed" every 100ms
+                if (wp34sPutKey(-2) == 0) {
+                    invalidate(); // only refresh on screen update
+                }
                 handler.postDelayed(this, 100);
-                invalidate();
             }
         };
         handler.post(runnableCode);

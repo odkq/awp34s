@@ -115,9 +115,11 @@ Java_com_megatops_wp34s_CalcView_wp34sPutKey(
         return -1;
     }
 
-    char logline[256];
-    sprintf(logline, "Translated key %d", translated);
-    android_logString(logline);
-    xprocess_keycode(translated);
-    return 0;
+    if (translated != K_HEARTBEAT) {
+        // avoid heartbeat log flooding
+        char logline[256];
+        sprintf(logline, "Translated key %d", translated);
+        android_logString(logline);
+    }
+    return xprocess_keycode(translated);
 }

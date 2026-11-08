@@ -91,21 +91,39 @@ int put_key(int k) {
     return k;
 }
 
-void xprocess_keycode(int k) {
-    if (k < 0)
-        return;
-
-    // 100ms stopwatch heartbeat
-    if (KeyCallback != NULL) {
-        (void) (*KeyCallback)(k);
-        return;
+// 0 for need to refresh display
+int xprocess_keycode(int k) {
+    if (k < 0) {
+        return -1;
     }
 
+    if (k == K_HEARTBEAT) {
+        Ticker++; // increase the 100ms ticker
+        if ((KeyCallback == NULL) && !StopWatchRunning) {
+            return -1; // fast return
+        }
+    }
+
+    // stopwatch running on the foreground
+    if (KeyCallback != NULL) {
+        (void) (*KeyCallback)(k);
+        return 0; // need screen update to display stopwatch
+    }
+
+    // stopwatch running in the background
+    int rc = -1;
     if (StopWatchRunning && (Ticker % STOPWATCH_BLINK) == 0) {
         dot(LIT_EQ, !is_dot(LIT_EQ));
         finish_display();
+        rc = 0; // need screen update to blink the "="
     }
-    process_keycode(k);
+
+    if (k != K_HEARTBEAT) {
+        process_keycode(k);
+        rc = 0;
+    }
+
+    return rc;
 }
 
 enum shifts shift_down(void) {

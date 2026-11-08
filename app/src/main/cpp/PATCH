@@ -170,9 +170,9 @@ diff -Naur original/lcd.c new/lcd.c
  /* Some wrapper routines to set segments of the display */
  void set_dot(int n) {
 -        dots[n] = 1;
-+    char buffer[256];
-+    sprintf(buffer, "set_dot %d", n);
-+    android_logString(buffer);
++    // char buffer[256];
++    // sprintf(buffer, "set_dot %d", n);
++    // android_logString(buffer);
 +    dots[n] = 1;
  }
  void clr_dot(int n) {
