@@ -22,16 +22,13 @@
 
 package com.megatops.wp34s;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
-
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -39,34 +36,35 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import java.io.IOException;
-import android.graphics.Canvas;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-
+import java.util.Objects;
 
 /* Main Activity is the entrypoint for an Android Application */
 public class MainActivity extends AppCompatActivity {
 
-    public static final String DataDir;
+    public static final String DATA_DIR;
 
     static {
-        // DataDir for the application is writtable without
+        // DataDir for the application is writable without
         // special permissions
-        DataDir = Environment.getExternalStorageDirectory() +
+        DATA_DIR = Environment.getExternalStorageDirectory() +
                 "/Android/data/com.megatops.wp34s";
         // Used to load the wp34s C library on application startup.
         System.loadLibrary("wp34s");
@@ -79,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
         Configuration conf = getResources().getConfiguration();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        // setContentView(R.layout.activity_main);
 
         setContentView(new CalcView(this));
         setupSystemBars();
@@ -106,8 +102,7 @@ public class MainActivity extends AppCompatActivity {
         controller.setAppearanceLightNavigationBars(false);
     }
 
-    public static void logString(String text)
-    {
+    public static void logString(String text) {
         Log.i("WP34S.C", text);
     }
 
@@ -117,19 +112,14 @@ public class MainActivity extends AppCompatActivity {
 /*
  * Main View of the program, representing visual elements and input
  */
-class CalcView extends View
-{
+class CalcView extends View {
     Context context;            /* Store context */
-    Handler handler = new Handler();    /* Handler for timers */
-    private Bitmap background;  /* Bitmap for the whole interface */
+    Handler handler = new Handler(Looper.getMainLooper());  /* Handler for timers */
 
-    private Canvas dotsCanvas;  /* Sub Canvas used for the 6x43 dots grid */
-    private Bitmap dots;        /* Bitmap for the dots */
-    private Rect dotsRect;      /* Geometry of the subcanvas before drawing */
-
-    private int cur_x = 0;      /* Last known position of the pointer  */
-    private int cur_y = 0;
-    private int cur_key = 0;    /* Last key detected */
+    private final Bitmap BACKGROUND;  /* Bitmap for the whole interface */
+    private Canvas dotsCanvas;        /* Sub Canvas used for the 6x43 dots grid */
+    private final Bitmap DOTS;        /* Bitmap for the dots */
+    private final Rect DOTS_RECT;     /* Geometry of the sub-canvas before drawing */
 
     float lcdRatioHeight = 0.0f;   /* To get Ratio of bitmap vs canvas height */
     float ratioHeight = 0.0f;      /* Aspect ratio between bitmap and canvas */
@@ -137,21 +127,7 @@ class CalcView extends View
                                       are used to get the relative pixel that is clicked */
 
     /* Dictionary mapping strings (name of assets) to loaded Bitmaps */
-    Map<String, Bitmap> bitmapMap =  new HashMap<String,Bitmap>();
-
-    /* Class to define a timer callback on another thread */
-    private Runnable runnableCode = new Runnable() {
-        @Override
-        public void run() {
-            // Do something here on the main thread
-            // Log.d("WP34S.MainActivity", "Called on main thread");
-            // Repeat this the same runnable code block again another 100 ms
-            // 'this' is referencing the Runnable object
-            wp34sPutKey(-2); // heartbeat key, "pressed" every 100ms
-            handler.postDelayed(this, 100);
-            invalidate();
-        }
-    };
+    Map<String, Bitmap> bitmapMap = new HashMap<String, Bitmap>();
 
     /* Constructor */
     public CalcView(Context context) {
@@ -159,21 +135,33 @@ class CalcView extends View
         this.context = context;
         loadAssets();
 
-        background = this.bitmapMap.get("wp34s_V3_highres_modern");
-        Bitmap fullscreen = this.bitmapMap.get("fullscreen");
-        lcdRatioHeight = (float)fullscreen.getHeight() / background.getHeight();
-
-        dots = Bitmap.createBitmap(fullscreen.getWidth(), fullscreen.getHeight(),
+        BACKGROUND = Objects.requireNonNull(this.bitmapMap.get("wp34s_V3_highres_modern"));
+        Bitmap fullscreen = Objects.requireNonNull(this.bitmapMap.get("fullscreen"));
+        lcdRatioHeight = (float) fullscreen.getHeight() / BACKGROUND.getHeight();
+        DOTS = Bitmap.createBitmap(fullscreen.getWidth(), fullscreen.getHeight(),
                 Bitmap.Config.ARGB_8888);
-        dotsRect = new Rect(0, 0, dots.getWidth(), dots.getHeight());
+        DOTS_RECT = new Rect(0, 0, DOTS.getWidth(), DOTS.getHeight());
+
+        /* Class to define a timer callback on another thread */
+        Runnable runnableCode = new Runnable() {
+            @Override
+            public void run() {
+                // Do something here on the main thread
+                // Log.d("WP34S.MainActivity", "Called on main thread");
+                // Repeat this the same runnable code block again another 100 ms
+                // 'this' is referencing the Runnable object
+                wp34sPutKey(-2); // heartbeat key, "pressed" every 100ms
+                handler.postDelayed(this, 100);
+                invalidate();
+            }
+        };
         handler.post(runnableCode);
     }
 
     /* Load all the pngs for the different segments on digits and parts of
      * the LCD screen from the Assets directory of the application
      */
-    private void loadAssets()
-    {
+    private void loadAssets() {
         Bitmap bitmap;
         InputStream is = null;
         AssetManager mgr = this.context.getAssets();
@@ -182,7 +170,7 @@ class CalcView extends View
          * not. That is why we list all the assets to be opened here (without
          * the ending .png)
          */
-        String[] filelist = {
+        String[] fileList = {
                 "0_minus", "10_1", "10_2", "10_3", "10_4", "10_5",
                 "10_6", "10_7", "10_comma", "10_dot", "11_1",
                 "11_2", "11_3", "11_4", "11_5", "11_6", "11_7",
@@ -207,56 +195,52 @@ class CalcView extends View
                 "rad", "rcl", "rpn", "small_equal", "sto", "input",
                 "wp34s_V3_highres_modern", "fullscreen"};
 
-        for (int i = 0; i < filelist.length; i++)
-        {
-            // Log.i("WP34S.MainActivity", "path " + filelist[i]);
+        for (String s : fileList) {
+            // Log.i("WP34S.MainActivity", "path " + fileList[i]);
             try {
-                String name = filelist[i] + ".webp";
+                String name = s + ".webp";
                 is = mgr.open(name, AssetManager.ACCESS_BUFFER);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("WP34S.MainActivity", "failed to load asset", e);
             }
-            bitmap = new BitmapDrawable(is).getBitmap();
-            this.bitmapMap.put(filelist[i], bitmap);
+            bitmap = new BitmapDrawable(getResources(), is).getBitmap();
+            this.bitmapMap.put(s, bitmap);
         }
     }
 
     /* Draw asset by name over the background canvas */
-    private void drawAsset(Canvas canvas, Paint p, String name)
-    {
+    private void drawAsset(Canvas canvas, Paint p, String name) {
         Bitmap bitmap = this.bitmapMap.get(name);
         if (bitmap == null) {
             Log.i("WP34S.MainActivity", "asset " + name + " not found ");
             return;
         }
-        Rect subsrc = new Rect(0, 0,
-                                bitmap.getWidth(), bitmap.getHeight());
+        Rect subSrc = new Rect(0, 0,
+                bitmap.getWidth(), bitmap.getHeight());
         Rect clip = canvas.getClipBounds();
 
-        Rect subdst = new Rect(clip.left, clip.top, clip.right, (int)(clip.bottom * lcdRatioHeight));
-        canvas.drawBitmap(bitmap, subsrc, subdst, p);
+        Rect subDst = new Rect(clip.left, clip.top, clip.right, (int) (clip.bottom * lcdRatioHeight));
+        canvas.drawBitmap(bitmap, subSrc, subDst, p);
     }
 
     /* Code to draw a digit directly from the interface. This is used for configuration/debugging
      * as segments to be drawn are addressed directly by the WP34S C code
      */
-    private void drawDigit(Canvas canvas, Paint p, int digit, int pos, boolean exponent)
-    {
+    private void drawDigit(Canvas canvas, Paint p, int digit, int pos, boolean exponent) {
         boolean[][] digArray = {
-                {true,  true,  true,  true,  true,  true,  false},
-                {false, false, true,  true,  false, false, false},
-                {false, true,  true,  false, true,  true,  true },
-                {false, true,  true,  true,  true,  false, true },
-                {true,  false, true,  true,  false, false, true },
-                {true,  true,  false, true,  true,  false, true },
-                {true,  true,  false, true,  true,  true,  true },
-                {false, true,  true,  true,  false, false, false},
-                {true,  true,  true,  true,  true,  true,  true },
-                {true,  true,  true,  true,  true,  false, true }
+                {true, true, true, true, true, true, false},
+                {false, false, true, true, false, false, false},
+                {false, true, true, false, true, true, true},
+                {false, true, true, true, true, false, true},
+                {true, false, true, true, false, false, true},
+                {true, true, false, true, true, false, true},
+                {true, true, false, true, true, true, true},
+                {false, true, true, true, false, false, false},
+                {true, true, true, true, true, true, true},
+                {true, true, true, true, true, false, true}
         };
 
-        int i;
-        for (i = 0; i < 7; i++) {
+        for (int i = 0; i < digArray[digit].length; i++) {
             if (digArray[digit][i]) {
                 String prefix = "";
                 if (exponent) {
@@ -274,33 +258,31 @@ class CalcView extends View
             }
         }
     }
+
     /* Clear dot canvas */
-    private void clearDots()
-    {
-        dotsCanvas = new Canvas(dots);
+    private void clearDots() {
+        dotsCanvas = new Canvas(DOTS);
         final Paint paint = new Paint();
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        dotsCanvas.drawRect(dotsRect, paint);
+        dotsCanvas.drawRect(DOTS_RECT, paint);
     }
 
     /* Draw the dots bitmap over the background */
-    private void drawDots(Canvas canvas, Paint p)
-    {
+    private void drawDots(Canvas canvas, Paint p) {
         Rect clip = canvas.getClipBounds();
-        Rect subdst = new Rect(clip.left, clip.top, clip.right,
-                               (int)(clip.bottom * lcdRatioHeight));
-        canvas.drawBitmap(dots, dotsRect, subdst, p);
+        Rect subDst = new Rect(clip.left, clip.top, clip.right,
+                (int) (clip.bottom * lcdRatioHeight));
+        canvas.drawBitmap(DOTS, DOTS_RECT, subDst, p);
     }
 
     /* Draw a dot (rectangular square) into the dots canvas */
-    private void drawDot(int x, int y)
-    {
-        int canvas_y = 30 + (11 * y);
-        int canvas_x = 60 + (10 * x);
+    private void drawDot(int x, int y) {
+        int canvasY = 30 + (11 * y);
+        int canvasX = 60 + (10 * x);
         Paint p = new Paint();
         p.setColor(Color.BLACK);
         p.setStrokeWidth(0);
-        Rect rect = new Rect(canvas_x, canvas_y, canvas_x + 9, canvas_y + 10);
+        Rect rect = new Rect(canvasX, canvasY, canvasX + 9, canvasY + 10);
         dotsCanvas.drawRect(rect, p);
     }
 
@@ -322,14 +304,12 @@ class CalcView extends View
              6  | 34    35    36    37    38
              --------------------------------
                   0      1     2     3     4
-
      */
-    private int retrieveKey(int x, int y)
-    {
+    private int retrieveKey(int x, int y) {
         /* Abscise points of corners of buttons on top three rows */
-        final int xup[] = {18, 137, 147, 266, 276, 395, 405, 524, 533, 653, 662, 782};
+        final int[] X_UP = {18, 137, 147, 266, 276, 395, 405, 524, 533, 653, 662, 782};
         /* Abscise points of corners of buttons on bottom four rows */
-        final int xdown[] = {18, 162, 172, 318, 328, 472, 482, 628, 638, 782};
+        final int[] X_DOWN = {18, 162, 172, 318, 328, 472, 482, 628, 638, 782};
 
         int row = retrieveRow(y);
         if (row == -1) {
@@ -339,23 +319,23 @@ class CalcView extends View
 
         /* Special case of the ENTER key */
         if (row == 2) {
-            if ((x >= xup[0]) && (x <= xup[3])) {
+            if ((x >= X_UP[0]) && (x <= X_UP[3])) {
                 return 13;
             }
         }
 
         if (row <= 2) {
             for (int i = 0; i < 6; i++) {
-                int min = xup[(i * 2)];
-                int max = xup[(i * 2) + 1];
+                int min = X_UP[(i * 2)];
+                int max = X_UP[(i * 2) + 1];
                 if ((x >= min) && (x <= max)) {
                     col = i;
                 }
             }
         } else {
             for (int i = 0; i < 5; i++) {
-                int min = xdown[(i * 2)];
-                int max = xdown[(i * 2) + 1];
+                int min = X_DOWN[(i * 2)];
+                int max = X_DOWN[(i * 2) + 1];
                 if ((x >= min) && (x <= max)) {
                     col = i;
                 }
@@ -374,26 +354,24 @@ class CalcView extends View
     }
 
     /* Return the row, common to all keys */
-    private int retrieveRow(int y)
-    {
-        final int yoffset = 19; // move the keypad down for better view
+    private int retrieveRow(int y) {
+        final int OFFSET = 19; // move the keypad down for better view
 
         /* Coordinate points of corners of buttons in all rows */
-        final int yrow[] = {280, 365, 420, 504, 592, 677, 720, 808, 850, 935, 980, 1064,
-                1108, 1194};
-        for (int i = 0; i < 7; i++) {
-            int min = yrow[(i * 2)] + yoffset;
-            int max = yrow[(i * 2) + 1] + yoffset;
+        final int[] Y_ROW = {280, 365, 420, 504, 592, 677, 720, 808, 850, 935, 980, 1064, 1108, 1194};
+        for (int i = 0; i < Y_ROW.length / 2; i++) {
+            int min = Y_ROW[(i * 2)] + OFFSET;
+            int max = Y_ROW[(i * 2) + 1] + OFFSET;
             if ((y >= min) && (y <= max)) {
                 return i;
             }
         }
         return -1;
     }
+
     /* Get the asset string associated to the number passed */
-    private String get_asset_from_dot(int n)
-    {
-        String []dots = {
+    private String get_asset_from_dot(int n) {
+        String[] dots = {
                 "uno",
                 "dos",
                 "tres",
@@ -402,8 +380,7 @@ class CalcView extends View
         return dots[1];
     }
 
-    private String bitposToResource(int n)
-    {
+    private String bitPosToResource(int n) {
         /*
          * Converts from LCD Segment names/ indexes to the resources nomenclature
          * TODO: Change the resources nomenclature to avoid this step*
@@ -421,18 +398,18 @@ class CalcView extends View
          *          "5"       h:7 "dot"
          *                     i:8 "comma"
          */
-        String [] resources = {
+        String[] resources = {
                 "2", "1", "7", "3", "6", "5", "4", "dot", "comma"
         };
         /*       0    1    2    3    4    5    6    7       8     */
         /*       *         *    *    *    *                       */
-        if (n > 9) {
+        if (n > resources.length) {
             return "Error";
         }
         return resources[n];
     }
-    private void drawAssetIf(Canvas canvas, byte[]data, Paint p, String name, int index)
-    {
+
+    private void drawAssetIf(Canvas canvas, byte[] data, Paint p, String name, int index) {
         if (data[index] != 0x00) {
             drawAsset(canvas, p, name);
         }
@@ -451,65 +428,65 @@ class CalcView extends View
 
         p.setAntiAlias(true);
         p.setFilterBitmap(true);
-        Rect src = new Rect(0, 0, background.getWidth(), background.getHeight());
-        canvas.drawBitmap(background, src, clip, p);
+        Rect src = new Rect(0, 0, BACKGROUND.getWidth(), BACKGROUND.getHeight());
+        canvas.drawBitmap(BACKGROUND, src, clip, p);
 
-        ratioWidth = (float)background.getWidth() / clip.width();
-        ratioHeight = (float)background.getHeight() / clip.height();
+        ratioWidth = (float) BACKGROUND.getWidth() / clip.width();
+        ratioHeight = (float) BACKGROUND.getHeight() / clip.height();
 
-        byte []data = wp34sGetLcdData();
+        byte[] data = wp34sGetLcdData();
 
-        String buffer = "in onDraw ";
-        for (int i= 0; i < data.length; i++) {
+        StringBuilder buffer = new StringBuilder("in onDraw ");
+        for (int i = 0; i < data.length; i++) {
             String message = String.format(Locale.US, "[%03d:%02x]", i, data[i]);
-            buffer = buffer + message;
+            buffer.append(message);
         }
-        // Log.i("WP34S.MainActivity", buffer);
 
         Log.i("WP34S.MainActivity", String.format(Locale.US, "data.length -> %d", data.length));
 
         /* First the digits */
         for (int i = 0; i < LcdConstants.DISPLAY_DIGITS; i++) {
-            int basebit = i * LcdConstants.SEGS_PER_DIGIT;
-            String basename = String.format(Locale.US, "%d_", (i + 1));
+            int baseBit = i * LcdConstants.SEGS_PER_DIGIT;
+            String baseName = String.format(Locale.US, "%d_", (i + 1));
             boolean dot = false;
             boolean comma = false;
-            for (int bitpos = 0; bitpos < LcdConstants.SEGS_PER_DIGIT; bitpos++) {
-                int bb = basebit + bitpos;
+            for (int bitPos = 0; bitPos < LcdConstants.SEGS_PER_DIGIT; bitPos++) {
+                int bb = baseBit + bitPos;
 
                 if (data[bb] != 0x00) {
-                    if (bitpos == 7) {
+                    if (bitPos == 7) {
                         dot = true;
-                    } else if (bitpos == 8) {
+                    } else if (bitPos == 8) {
                         comma = true;
                     } else {
-                        String asset = basename + bitposToResource(bitpos);
+                        String asset = baseName + bitPosToResource(bitPos);
                         drawAsset(canvas, p, asset);
                     }
                 }
             }
             if (comma) {
-                drawAsset(canvas, p, basename + "comma");
+                drawAsset(canvas, p, baseName + "comma");
             } else if (dot) {
-                drawAsset(canvas, p, basename + "dot");
+                drawAsset(canvas, p, baseName + "dot");
             }
         }
+
         /* The exponent */
         for (int i = 0; i < 3; i++) {
-            int basebit = LcdConstants.SEGS_EXP_BASE + (i * LcdConstants.SEGS_PER_EXP_DIGIT);
-            String basename = String.format(Locale.US, "e%d_", (i + 1));
+            int baseBit = LcdConstants.SEGS_EXP_BASE + (i * LcdConstants.SEGS_PER_EXP_DIGIT);
+            String baseName = String.format(Locale.US, "e%d_", (i + 1));
             boolean dot = false;
             boolean comma = false;
-            for (int bitpos = 0; bitpos < LcdConstants.SEGS_PER_EXP_DIGIT; bitpos++) {
-                int bb = basebit + bitpos;
+            for (int bitPos = 0; bitPos < LcdConstants.SEGS_PER_EXP_DIGIT; bitPos++) {
+                int bb = baseBit + bitPos;
                 if (data[bb] != 0x00) {
-                    String asset = basename + bitposToResource(bitpos);
+                    String asset = baseName + bitPosToResource(bitPos);
                     drawAsset(canvas, p, asset);
                 }
             }
         }
-        /* The indicators */
 
+        /* The indicators */
         drawAssetIf(canvas, data, p, "0_minus", LcdConstants.MANT_SIGN);
         drawAssetIf(canvas, data, p, "e0_minus", LcdConstants.EXP_SIGN);
         drawAssetIf(canvas, data, p, "bit_equal", LcdConstants.BIG_EQ);
@@ -536,90 +513,30 @@ class CalcView extends View
             }
         }
         drawDots(canvas, p);
-        /*
-        for (int i = 0; i < 4; i++) {
-            if (cur_x != 0) {
-                String xs = String.format(Locale.getDefault(), "%04d", cur_x);
-                int digit = Integer.parseInt(xs.substring(i, i+ 1));
-                Log.i("WP34S.MainActivity", "digit" + digit + " pos " +
-                        i + 6);
-                drawDigit(canvas, p, digit, i + 1, false);
-            }
-            if (cur_y != 0) {
-                String ys = String.format(Locale.getDefault(), "%04d", cur_y);
-                int digit = Integer.parseInt(ys.substring(i, i + 1));
-                Log.i("WP34S.MainActivity", "digit" + digit + " pos " +
-                        i + 6);
-                drawDigit(canvas, p, digit, i + 6, false);
-            }
-        }
-        for (int i = 0; i < 3; i++) {
-            if (cur_key != 0) {
-                String ks = String.format(Locale.getDefault(), "%03d", cur_key);
-                int digit = Integer.parseInt(ks.substring(i, i + 1));
-                drawDigit(canvas, p, digit, i + 1, true);
-            }
-        }
-
-        /*
-        for (int i = 1; i <= 12; i++) {
-            drawDigit(canvas, p, curdig, i, false);
-        }
-        for (int i = 1; i <= 3; i++) {
-            drawDigit(canvas, p, curdig, i, true);
-        }
-
-        drawAsset(canvas, p, "0_minus");
-        drawAsset(canvas, p, "e0_minus");
-        drawAsset(canvas, p, "bit_equal");
-        drawAsset(canvas, p, "small_equal");
-        drawAsset(canvas, p, "arrow_down");
-        drawAsset(canvas, p, "batt");
-        drawAsset(canvas, p, "beg");
-        drawAsset(canvas, p, "sto");
-        drawAsset(canvas, p, "rcl");
-        drawAsset(canvas, p, "rad");
-        drawAsset(canvas, p, "360");
-        drawAsset(canvas, p, "rpn");
-        */
-        /*
-        clearDots();
-        for (int x = 0; x < 44; x++) {
-            for (int y = 0; y < 7; y++) {
-                drawDot(x, y);
-            }
-        }
-        drawDots(canvas, p);
-         */
     }
 
     /*
      * Callback from the touchscreen events. Detects the relative coordinates
-     * inside the parent bitmap; translate from phisical coordinates to coordinates in the
+     * inside the parent bitmap; translate from physical coordinates to coordinates in the
      * original png, and calculate the button (if any) being pressed.
      */
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public boolean onTouchEvent(MotionEvent e)
-    {
+    public boolean onTouchEvent(MotionEvent e) {
         int what = e.getAction();
-        if (what != MotionEvent.ACTION_DOWN && what != MotionEvent.ACTION_UP)
-        {
+        if (what != MotionEvent.ACTION_DOWN && what != MotionEvent.ACTION_UP) {
             return true;
         }
+
         if (what == MotionEvent.ACTION_DOWN) {
             int x = (int) (e.getX() * ratioWidth);
             int y = (int) (e.getY() * ratioHeight);
-            cur_x = x;
-            cur_y = y;
-            cur_key = retrieveKey(cur_x, cur_y);
+            int cur_key = retrieveKey(x, y);
             invalidate();
             Log.i("WP34S.MainActivity", "action down " + x + " " + y + " key " + cur_key);
             wp34sPutKey(cur_key);
+
         } else {
-            cur_x = 0;
-            cur_y = 0;
-            cur_key = 0;
             invalidate();
             Log.i("WP34S.MainActivity", "action up");
             wp34sPutKey(-1);
@@ -628,6 +545,8 @@ class CalcView extends View
     }
 
     public native int wp34sIsDot(int n);
+
     public native byte[] wp34sGetLcdData();
+
     public native int wp34sPutKey(int key);
 }

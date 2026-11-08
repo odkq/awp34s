@@ -42,8 +42,7 @@ int view_instruction_counter = 0;
  * Return the directory for data files of this application in
  * android
  */
-char *get_datfile(char *datfile, const char *basename)
-{
+char *get_datfile(char *datfile, const char *basename) {
     char line[1024];
     FILE *fp = fopen("/proc/self/cmdline", "r");
 
@@ -55,8 +54,7 @@ char *get_datfile(char *datfile, const char *basename)
     return datfile;
 }
 
-void init_calculator()
-{
+void init_calculator() {
     char datfile[1024];
 
     for (int i = 0; i < 10; i++) {
@@ -85,16 +83,15 @@ void init_calculator()
     */
 }
 
-int is_key_pressed(void)
-{
+int is_key_pressed(void) {
     return 0;
 }
-int put_key(int k)
-{
+
+int put_key(int k) {
     return k;
 }
-void xprocess_keycode(int k)
-{
+
+void xprocess_keycode(int k) {
     if (k < 0)
         return;
 
@@ -110,31 +107,29 @@ void xprocess_keycode(int k)
     }
     process_keycode(k);
 }
-enum shifts shift_down(void)
-{
+
+enum shifts shift_down(void) {
     return SHIFT_N;
 }
-void put_byte( unsigned char byte )
-{
+
+void put_byte(unsigned char byte) {
     report_err(ERR_PROG_BAD);
 }
-void flush_comm( void )
-{
-}
-int open_port( int baud, int bits, int parity, int stopbits )
-{
-    return 0;
-}
-extern void close_port( void )
-{
+
+void flush_comm(void) {
 }
 
-void updateScreen()
-{
+int open_port(int baud, int bits, int parity, int stopbits) {
+    return 0;
+}
+
+extern void close_port(void) {
+}
+
+void updateScreen() {
     android_logString("updateScreen start");
 }
 
-int is_dot_wrapper(int n)
-{
+int is_dot_wrapper(int n) {
     return is_dot(n);
 }
