@@ -75,14 +75,6 @@ Java_com_megatops_wp34s_CalcView_wp34sGetLcdData(
     return retVal;
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_com_megatops_wp34s_CalcView_wp34sIsDot(
-        JNIEnv *env,
-        jobject /* this */,
-        jint n) {
-    return is_dot_wrapper(n);
-}
-
 /* This is called as MainActivity.wp34sPutKey() from Java */
 extern "C" JNIEXPORT jint JNICALL
 Java_com_megatops_wp34s_CalcView_wp34sPutKey(
