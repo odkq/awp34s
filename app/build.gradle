@@ -4,12 +4,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    namespace = "com.megatops.wp34s"
+    namespace = "com.odkq.wp34s"
     compileSdk = 37
     buildToolsVersion = '37.0.0'
     ndkVersion = '30.0.16248370'
     defaultConfig {
-        applicationId "com.megatops.wp34s"
+        applicationId "com.odkq.wp34s"
         minSdk 22
         targetSdk 34
         versionCode 7

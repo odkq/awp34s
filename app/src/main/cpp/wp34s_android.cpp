@@ -32,7 +32,7 @@ extern void display(void);
 int android_logString(char *text) {
     jstring jTextParam = global_env->NewStringUTF(text);
 
-    jclass activityClass = global_env->FindClass("com/megatops/wp34s/MainActivity");
+    jclass activityClass = global_env->FindClass("com/odkq/wp34s/MainActivity");
     jmethodID logStringID = global_env->GetStaticMethodID(activityClass, "logString",
                                                           "(Ljava/lang/String;)V");
     if (!logStringID) {
@@ -45,7 +45,7 @@ int android_logString(char *text) {
 
 /* This is called as MainActivity.wp34sInit() from Java */
 extern "C" JNIEXPORT jint JNICALL
-Java_com_megatops_wp34s_MainActivity_wp34sInit(
+Java_com_odkq_wp34s_MainActivity_wp34sInit(
         JNIEnv *env,
         jobject /* this */) {
     global_env = env;
@@ -56,7 +56,7 @@ Java_com_megatops_wp34s_MainActivity_wp34sInit(
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_megatops_wp34s_CalcView_wp34sGetLcdData(
+Java_com_odkq_wp34s_CalcView_wp34sGetLcdData(
         JNIEnv *env,
         jobject /* this */) {
     /*
@@ -77,7 +77,7 @@ Java_com_megatops_wp34s_CalcView_wp34sGetLcdData(
 
 /* This is called as MainActivity.wp34sPutKey() from Java */
 extern "C" JNIEXPORT jint JNICALL
-Java_com_megatops_wp34s_CalcView_wp34sPutKey(
+Java_com_odkq_wp34s_CalcView_wp34sPutKey(
         JNIEnv *env,
         jobject /* this */,
         jint key) {

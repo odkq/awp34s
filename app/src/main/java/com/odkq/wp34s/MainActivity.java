@@ -20,7 +20,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.megatops.wp34s;
+package com.odkq.wp34s;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
