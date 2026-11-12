@@ -56,7 +56,6 @@ import java.util.Objects;
 
 /* Main Activity is the entrypoint for an Android Application */
 public class MainActivity extends AppCompatActivity {
-
     static {
         // load the wp34s C library on application startup.
         System.loadLibrary("wp34s");
@@ -81,10 +80,8 @@ public class MainActivity extends AppCompatActivity {
         Window window = getWindow();
 
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.clearFlags(
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
-                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
-        );
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         window.setStatusBarColor(Color.parseColor("#292729"));
         window.setNavigationBarColor(Color.parseColor("#272526"));
 
@@ -113,10 +110,13 @@ class CalcView extends View {
     private final Bitmap DOTS;        /* Bitmap for the dots */
     private final Rect DOTS_RECT;     /* Geometry of the sub-canvas before drawing */
 
-    private final float lcdRatioHeight; /* To get Ratio of bitmap vs canvas height */
-    private float ratioHeight = 0.0f;   /* Aspect ratio between bitmap and canvas */
-    private float ratioWidth = 0.0f;    /* Aspect ratio between bitmap and canvas. Those
-                                           are used to get the relative pixel that is clicked */
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int ORIG_WIDTH = 800;   /* the original skin width */
+    private final int ORIG_HEIGHT = 1300; /* the original skin height */
+    private final float LCD_RATIO_HEIGHT; /* To get Ratio of bitmap vs canvas height */
+    private float ratioHeight = 0.0f;     /* Aspect ratio between bitmap and canvas */
+    private float ratioWidth = 0.0f;      /* Aspect ratio between bitmap and canvas. Those
+                                             are used to get the relative pixel that is clicked */
 
     private final Paint PRESSED_PAINT;
     private boolean showPressed = false;
@@ -134,7 +134,7 @@ class CalcView extends View {
 
         BACKGROUND = Objects.requireNonNull(this.BMP.get("wp34s_V3_highres_modern"));
         Bitmap fullscreen = Objects.requireNonNull(this.BMP.get("fullscreen"));
-        lcdRatioHeight = (float) fullscreen.getHeight() / BACKGROUND.getHeight();
+        LCD_RATIO_HEIGHT = (float) fullscreen.getHeight() / ORIG_HEIGHT;
         DOTS = Bitmap.createBitmap(fullscreen.getWidth(), fullscreen.getHeight(),
                 Bitmap.Config.ARGB_8888);
         DOTS_RECT = new Rect(0, 0, DOTS.getWidth(), DOTS.getHeight());
@@ -220,7 +220,7 @@ class CalcView extends View {
         }
         Rect subSrc = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         Rect clip = canvas.getClipBounds();
-        Rect subDst = new Rect(clip.left, clip.top, clip.right, (int) (clip.bottom * lcdRatioHeight));
+        Rect subDst = new Rect(clip.left, clip.top, clip.right, (int) (clip.bottom * LCD_RATIO_HEIGHT));
         canvas.drawBitmap(bitmap, subSrc, subDst, p);
     }
 
@@ -235,8 +235,7 @@ class CalcView extends View {
     /* Draw the dots bitmap over the background */
     private void drawDots(Canvas canvas, Paint p) {
         Rect clip = canvas.getClipBounds();
-        Rect subDst = new Rect(clip.left, clip.top, clip.right,
-                (int) (clip.bottom * lcdRatioHeight));
+        Rect subDst = new Rect(clip.left, clip.top, clip.right, (int) (clip.bottom * LCD_RATIO_HEIGHT));
         canvas.drawBitmap(DOTS, DOTS_RECT, subDst, p);
     }
 
@@ -396,8 +395,8 @@ class CalcView extends View {
                     PRESSED_RADIUS, PRESSED_RADIUS, PRESSED_PAINT);
         }
 
-        ratioWidth = (float) BACKGROUND.getWidth() / clip.width();
-        ratioHeight = (float) BACKGROUND.getHeight() / clip.height();
+        ratioWidth = (float) ORIG_WIDTH / clip.width();
+        ratioHeight = (float) ORIG_HEIGHT / clip.height();
 
         byte[] data = wp34sGetLcdData();
 
