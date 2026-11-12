@@ -9,9 +9,9 @@
 
 # Sets the minimum version of CMake required to build the native library.
 
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
 
-set (CMAKE_CXX_FLAGS "-DANDROID -DINCLUDE_USER_MODE -I./ -std=c++11")
+project(wp34s)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -166,6 +166,25 @@ add_library( # Sets the name of the library.
         consts/const_recipsqrt2PI.c
         consts/const_root2on2.c
         consts/const_sqrt2PI.c)
+
+set_target_properties(wp34s PROPERTIES
+        C_STANDARD 11
+        C_STANDARD_REQUIRED ON
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+)
+
+target_compile_options(wp34s PRIVATE
+        -Wno-deprecated-declarations
+        -Wno-macro-redefined
+)
+
+target_compile_definitions(wp34s PUBLIC
+        INCLUDE_USER_MODE
+        ANDROID
+)
+
+target_include_directories(wp34s PRIVATE ./)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

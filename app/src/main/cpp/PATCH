@@ -126,17 +126,6 @@ diff -Naur original/features.h new/features.h
  /*
   *  Select optional features here
   */
-@@ -37,7 +38,10 @@
- // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
- // Time Module or the HP-55
- #if !defined(REALBUILD) || (defined(XTAL) /* && !defined(INFRARED) */)
-+// pmm
-+#if !defined(ANDROID)
- #define INCLUDE_STOPWATCH
-+#endif
- #else
- //#define INCLUDE_STOPWATCH
- #endif
 diff -Naur original/keys.c new/keys.c
 --- original/keys.c	2021-05-09 01:03:02.799054304 +0200
 +++ new/keys.c	2021-05-09 01:03:03.231054505 +0200
@@ -156,7 +145,7 @@ diff -Naur original/keys.c new/keys.c
 diff -Naur original/lcd.c new/lcd.c
 --- original/lcd.c	2021-05-09 01:03:03.063054427 +0200
 +++ new/lcd.c	2021-05-09 01:03:03.571054662 +0200
-@@ -15,10 +15,15 @@
+@@ -15,6 +15,7 @@
   */
  
  
@@ -164,14 +153,6 @@ diff -Naur original/lcd.c new/lcd.c
  #include "lcd.h"
  #include "display.h"
  #include "xeq.h"
- 
-+#if defined(ANDROID)
-+#include "wp34s_android.h"
-+#endif
-+
- #if defined(REALBUILD)
- #include "atmel/board.h"
- #include "atmel/slcdc.h"
 @@ -26,8 +31,9 @@
  volatile FLAG WaitForLcd;
  #endif
@@ -189,9 +170,9 @@ diff -Naur original/lcd.c new/lcd.c
  /* Some wrapper routines to set segments of the display */
  void set_dot(int n) {
 -        dots[n] = 1;
-+    char buffer[256];
-+    sprintf(buffer, "set_dot %d", n);
-+    android_logString(buffer);
++    // char buffer[256];
++    // sprintf(buffer, "set_dot %d", n);
++    // android_logString(buffer);
 +    dots[n] = 1;
  }
  void clr_dot(int n) {
@@ -322,6 +303,19 @@ diff -Naur original/lcd.c new/lcd.c
 diff -Naur original/lcd.h new/lcd.h
 --- original/lcd.h	2021-05-09 01:03:02.803054306 +0200
 +++ new/lcd.h	2021-05-09 01:03:03.247054511 +0200
+@@ -18,6 +18,12 @@
+ #define __LCD_H__
+ #include "xeq.h"
+ 
++#if defined(ANDROID)
++#include <string.h>
++#include "wp34s_android.h"
++#define PRINTF printf
++#endif
++
+ #if defined(QTGUI) || defined(IOS)
+ #include <stdint.h>
+ #endif
 @@ -93,8 +93,9 @@
  #define Lcd_Enable()
  #endif
@@ -346,15 +340,6 @@ diff -Naur original/pretty.c new/pretty.c
  #include "translate.c"		// unicode[]
  #include "font_alias.inc"	// more character aliases
  
-diff -Naur original/revision.h new/revision.h
---- original/revision.h	2021-05-09 01:03:02.787054299 +0200
-+++ new/revision.h	2021-05-09 01:03:03.187054484 +0200
-@@ -24,4 +24,4 @@
- #ifdef REALBUILD
- __attribute__((section(".revision"),externally_visible))
- #endif
--const char SvnRevision[ 4 ] = "0   ";
-+const char SvnRevision[ 4 ] = "3914";
 diff -Naur original/storage.c new/storage.c
 --- original/storage.c	2021-05-09 01:03:02.803054306 +0200
 +++ new/storage.c	2021-05-09 01:03:03.239054508 +0200
@@ -382,7 +367,7 @@ diff -Naur original/storage.c new/storage.c
  static int program_flash( void *destination, void *source, int count )
  {
  	char *name;
-+	char *buffer[1024];
++	char buffer[1024];
  	char *dest = (char *) destination;
  	FILE *f = NULL;
  	int offset;
@@ -423,29 +408,15 @@ diff -Naur original/storage.c new/storage.c
  		p = CurrentDir + strlen( CurrentDir );
  		if ( p != CurrentDir && p[ -1 ] != SEPARATOR ) {
  			*p = SEPARATOR;
-@@ -1011,11 +1017,21 @@
+@@ -1011,7 +1017,7 @@
  
  static char* mktmpname(char* name, const char* prefix)
  {
 -#if defined(QTGUI) || ( defined(USECURSES) && ! defined(WIN32) )
-+	// pmm
 +#if defined(QTGUI) || ( defined(USECURSES)  || defined(ANDROID) && ! defined(WIN32) )
  	strcpy(name, "wp34s");
  	strcat(name, prefix);
  	strcat(name, "_XXXXXX");
-+
-+#ifdef ANDROID
-+	#pragma clang diagnostic push
-+	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-+#endif
- 	return mktemp(name);
-+#ifdef ANDROID
-+	#pragma  clang diagnostic pop
-+#endif
-+
- #else
- 	return tmpnam(name);
- #endif
 @@ -1081,7 +1097,9 @@
  		f = fopen( tempname, "rb" );
  
@@ -457,6 +428,18 @@ diff -Naur original/storage.c new/storage.c
  		}
  		else {
  			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
+diff -Naur original/stopwatch.c new/stopwatch.c
+--- original/stopwatch.c	2026-11-07 18:24:59.606377800 +0800
++++ new/stopwatch.c	2026-11-08 15:01:26.569148900 +0800
+@@ -116,7 +116,7 @@
+  * Current ticker count. Or its emulation when not running on WP34s hardware
+  */
+ unsigned long getTicker() {
+-#if defined(CONSOLE) || defined(IOS)
++#if defined(CONSOLE) || defined(IOS) || defined(ANDROID)
+     struct timeval tv;
+     gettimeofday(&tv,(struct timezone*) NULL);
+     return tv.tv_sec * 10 + tv.tv_usec / 100000;
 diff -Naur original/xeq.c new/xeq.c
 --- original/xeq.c	2021-05-09 01:03:02.799054304 +0200
 +++ new/xeq.c	2021-05-09 01:03:03.223054500 +0200
@@ -466,9 +449,9 @@ diff -Naur original/xeq.c new/xeq.c
  void cmd_off(enum nilop op) {
 -	// shutdown_calc();
 +	shutdown_calc();
+ //	shutdown();
  }
  
- #ifndef state_pc
 @@ -6175,6 +6175,8 @@
  #ifndef REALBUILD
  

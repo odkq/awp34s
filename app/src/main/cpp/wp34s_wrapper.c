@@ -4,6 +4,7 @@
  * wp34s_wrapper.c: Bridge between JNI C++ and WPS34 C code
  *
  * Copyright (C) 2020 Pablo Martin Medrano <pablo@odkq.com>
+ * Copyright (C) 2026 Ding Zhaojie <zhaojie_ding@msn.com>
  *
  * AWP34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +42,7 @@ int view_instruction_counter = 0;
  * Return the directory for data files of this application in
  * android
  */
-char *get_datfile(char *datfile, const char *basename)
-{
+char *get_datfile(char *datfile, const char *basename) {
     char line[1024];
     FILE *fp = fopen("/proc/self/cmdline", "r");
 
@@ -54,8 +54,7 @@ char *get_datfile(char *datfile, const char *basename)
     return datfile;
 }
 
-void init_calculator()
-{
+void init_calculator() {
     char datfile[1024];
 
     for (int i = 0; i < 10; i++) {
@@ -84,45 +83,71 @@ void init_calculator()
     */
 }
 
-int is_key_pressed(void)
-{
+int is_key_pressed(void) {
     return 0;
-}
-int put_key(int k)
-{
-    return k;
-}
-void xprocess_keycode(int k)
-{
-    if (k < 0)
-        return;
-    return process_keycode(k);
-}
-enum shifts shift_down(void)
-{
-    return SHIFT_N;
-}
-void put_byte( unsigned char byte )
-{
-    report_err(ERR_PROG_BAD);
-}
-void flush_comm( void )
-{
-}
-int open_port( int baud, int bits, int parity, int stopbits )
-{
-    return 0;
-}
-extern void close_port( void )
-{
 }
 
-void updateScreen()
-{
+int put_key(int k) {
+    return k;
+}
+
+// 0 for need to refresh display
+int xprocess_keycode(int k) {
+    if (k < 0) {
+        return -1;
+    }
+
+    if (k == K_HEARTBEAT) {
+        Ticker++; // increase the 100ms ticker
+        if ((KeyCallback == NULL) && !StopWatchRunning) {
+            return -1; // fast return
+        }
+    }
+
+    // stopwatch running on the foreground
+    if (KeyCallback != NULL) {
+        (void) (*KeyCallback)(k);
+        return 0; // need screen update to display stopwatch
+    }
+
+    // stopwatch running in the background
+    int rc = -1;
+    if (StopWatchRunning && (Ticker % STOPWATCH_BLINK) == 0) {
+        dot(LIT_EQ, !is_dot(LIT_EQ));
+        finish_display();
+        rc = 0; // need screen update to blink the "="
+    }
+
+    if (k != K_HEARTBEAT) {
+        process_keycode(k);
+        rc = 0;
+    }
+
+    return rc;
+}
+
+enum shifts shift_down(void) {
+    return SHIFT_N;
+}
+
+void put_byte(unsigned char byte) {
+    report_err(ERR_PROG_BAD);
+}
+
+void flush_comm(void) {
+}
+
+int open_port(int baud, int bits, int parity, int stopbits) {
+    return 0;
+}
+
+extern void close_port(void) {
+}
+
+void updateScreen() {
     android_logString("updateScreen start");
 }
 
-int is_dot_wrapper(int n)
-{
+int is_dot_wrapper(int n) {
     return is_dot(n);
 }

@@ -5,6 +5,7 @@
  * (Bridge between Java and C++)
  *
  * Copyright (C) 2020 Pablo Martin Medrano <pablo@odkq.com>
+ * Copyright (C) 2026 Ding Zhaojie <zhaojie_ding@msn.com>
  *
  * AWP34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +28,7 @@ JNIEnv *global_env;
 
 extern "C" {
 extern void display(void);
-}
 
-extern "C" {
 int android_logString(char *text) {
     jstring jTextParam = global_env->NewStringUTF(text);
 
@@ -41,6 +40,7 @@ int android_logString(char *text) {
     }
     global_env->CallStaticVoidMethod(activityClass, logStringID, jTextParam);
     return 0;
+}
 }
 
 /* This is called as MainActivity.wp34sInit() from Java */
@@ -59,7 +59,6 @@ extern "C" JNIEXPORT jbyteArray JNICALL
 Java_com_odkq_wp34s_CalcView_wp34sGetLcdData(
         JNIEnv *env,
         jobject /* this */) {
-    //display();
     /*
      * See lcd.h
      * (DISPLAY_DIGITS + SEGS_PER_DIGIT) + (3 * SEGS_PER_EXP_DIGIT) = 128
@@ -68,21 +67,12 @@ Java_com_odkq_wp34s_CalcView_wp34sGetLcdData(
      * 400 = 50 * 8 bits
      */
     jbyteArray retVal = env->NewByteArray(400);
-    jbyte *buf = env->GetByteArrayElements(retVal, NULL);
-    // memcpy((void *) buf, (void *) data, 50);
+    jbyte *buf = env->GetByteArrayElements(retVal, nullptr);
     memcpy((void *) buf, (void *) dots, 400);
 
     env->ReleaseByteArrayElements(retVal, buf, 0);
 
     return retVal;
-}
-
-extern "C" JNIEXPORT jint JNICALL
-Java_com_odkq_wp34s_CalcView_wp34sIsDot(
-        JNIEnv *env,
-        jobject /* this */,
-        jint n) {
-    return is_dot_wrapper(n);
 }
 
 /* This is called as MainActivity.wp34sPutKey() from Java */
@@ -94,8 +84,7 @@ Java_com_odkq_wp34s_CalcView_wp34sPutKey(
     /* Translate row/column calculated key to the constants
      * in keys.h */
     jint translated;
-#define K_RELEASE 98   // From xeq.h
-    jint jtockey[] =
+    static const jint J2C_KEY[] =
             {-1, 0, 1, 2, 3, 4, 5,
              6, 7, 8, 9, 10, 11,
              12, -1, 13, 14, 15, 16,
@@ -103,17 +92,26 @@ Java_com_odkq_wp34s_CalcView_wp34sPutKey(
              24, 25, 26, 27, 28,
              30, 31, 32, 33, 34,
              36, 37, 38, 39, 40};
-    if (key == -1) {
+
+#define K_RELEASE   98 // From xeq.h
+#define K_HEARTBEAT 99 // From xeq.h
+#define ARRAY_SZ(arr) (sizeof(arr) / sizeof(arr[0]))
+
+    if (key == -2) { // in most case (100ms)
+        translated = K_HEARTBEAT;
+    } else if (key == -1) {
         translated = K_RELEASE;
-    } else if ((key < 0) || (key > 38)) {
-        return -1;
+    } else if ((key >= 0) && (key < ARRAY_SZ(J2C_KEY))) {
+        translated = J2C_KEY[key];
     } else {
-        translated = jtockey[key];
+        return -1;
     }
-    char logline[256];
-    sprintf(logline, "Translated key %d", translated);
-    android_logString(logline);
-    xprocess_keycode(translated);
-    return 0;
-}
+
+    if (translated != K_HEARTBEAT) {
+        // avoid heartbeat log flooding
+        char logline[256];
+        sprintf(logline, "Translated key %d", translated);
+        android_logString(logline);
+    }
+    return xprocess_keycode(translated);
 }

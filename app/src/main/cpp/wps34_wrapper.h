@@ -22,6 +22,7 @@
 
 #ifndef WP34S_WRAPPER_H_
 #define WP34S_WRAPPER_H_
+
 extern "C"
 {
     extern uint64_t LcdData[10];
@@ -29,8 +30,7 @@ extern "C"
     extern void init_calculator();
     void updateScreen();
     extern int is_dot_wrapper(int n);
-    extern int xput_key(int k);
-    extern void xprocess_keycode(int k);
+    extern int xprocess_keycode(int k);
     extern char *get_datfile(char *datfile, const char *basename);
 };
 #endif
